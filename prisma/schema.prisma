@@ -1,14 +1,93 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model comment {
+  commentId           Int      @id @default(autoincrement())
+  commentMessage      String   @db.VarChar(2200)
+  commentCreationDate DateTime @default(now()) @db.DateTime(0)
+  userId              Int
+  postId              Int
+  user                user     @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_comment_ibfk_1")
+  post                post     @relation(fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "_comment_ibfk_2")
+
+  @@index([postId], map: "postId")
+  @@index([userId], map: "userId")
+  @@map("_comment")
+}
+
+model follow {
+  followId           Int      @id @default(autoincrement())
+  followingId        Int
+  followerId         Int
+  followCreationDate DateTime @default(now()) @db.DateTime(0)
+
+  @@map("_follow")
+}
+
+model like {
+  likeId           Int      @id @default(autoincrement())
+  likeCreationDate DateTime @default(now()) @db.DateTime(0)
+  userId           Int
+  postId           Int
+  user             user     @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_like_ibfk_1")
+  post             post     @relation(fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "_like_ibfk_2")
+
+  @@index([postId], map: "postId")
+  @@index([userId], map: "userId")
+  @@map("_like")
+}
+
+model post {
+  postId               Int       @id @default(autoincrement())
+  postCaption          String    @db.VarChar(2200)
+  postCreationDate     DateTime  @default(now()) @db.DateTime(0)
+  postModificationDate DateTime? @db.DateTime(0)
+  userId               Int
+  comment              comment[]
+  like                 like[]
+  user                 user      @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_post_ibfk_1")
+
+  @@index([userId], map: "userId")
+  @@map("_post")
+}
+
+model profile {
+  profileId                    Int       @id @default(autoincrement())
+  profileSexe                  String    @db.VarChar(255)
+  profileCountry               String    @db.VarChar(255)
+  profileCity                  String    @db.VarChar(255)
+  profileCreationDate          DateTime  @default(now()) @db.DateTime(0)
+  profileModificationDate      DateTime? @db.DateTime(0)
+  userId                       Int
+  user_profile_userIdTouser    user      @relation("profile_userIdTouser", fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_profile_ibfk_1")
+  user_user_profileIdToprofile user[]    @relation("user_profileIdToprofile")
+
+  @@index([userId], map: "userId")
+  @@map("_profile")
+}
+
+model user {
+  userId                          Int       @id @default(autoincrement())
+  userFirstName                   String    @db.VarChar(255)
+  userLastName                    String    @db.VarChar(255)
+  userEmail                       String    @unique(map: "userEmail") @db.VarChar(255)
+  userPassword                    String    @db.VarChar(255)
+  isAdmin                         Boolean
+  userCreationDate                DateTime  @default(now()) @db.DateTime(0)
+  userModificationDate            DateTime? @db.DateTime(0)
+  profileId                       Int
+  comment                         comment[]
+  like                            like[]
+  post                            post[]
+  profile_profile_userIdTouser    profile[] @relation("profile_userIdTouser")
+  profile_user_profileIdToprofile profile   @relation("user_profileIdToprofile", fields: [profileId], references: [profileId], onDelete: NoAction, onUpdate: NoAction, map: "_user_ibfk_1")
+
+  @@index([profileId], map: "profileId")
+  @@map("_user")
 }
