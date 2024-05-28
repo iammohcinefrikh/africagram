@@ -45,6 +45,29 @@ const registerSchema = Joi.object({
         })
     });
 
+// define a Joi schema for login validation
+const loginSchema = Joi.object({
+    // define validation for userEmail
+    userEmail: Joi.string() // userEmail should be a string
+    .email() // userEmail should be a valid email
+    .required() // userEmail is required
+    .messages({ // custom error messages
+      "string.empty": "Email cannot be empty", // error message when userEmail is empty
+      "string.email": "Please enter a valid email", // error message when userEmail is not a valid email
+      "any.required": "Email is required" // error message when userEmail is not provided
+    }),
+
+    // define validation for userPassword
+    userPassword: Joi.string() // userPassword should be a string
+    .min(8) // userPassword should have a minimum length of 8
+    .required() // userPassword is required
+    .messages({ // custom error messages
+      "string.empty": "Password cannot be empty", // error message when userPassword is empty
+      "string.min": "Password should have a minimum length of 8", // error message when userPassword is less than 8 characters
+      "any.required": "Password is required" // error message when userPassword is not provided
+    }) 
+});
+
 const register= async (request, response) => {
     try {
         registerSchema.validate({userFirstName: request.body.userFirstName, userLastName: request.body.userLastName, userEmail: request.body.userEmail, userPassword: request.body.userPassword})
