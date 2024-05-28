@@ -58,36 +58,32 @@ model post {
 }
 
 model profile {
-  profileId                    Int       @id @default(autoincrement())
-  profileSexe                  String    @db.VarChar(255)
-  profileCountry               String    @db.VarChar(255)
-  profileCity                  String    @db.VarChar(255)
-  profileCreationDate          DateTime  @default(now()) @db.DateTime(0)
-  profileModificationDate      DateTime? @db.DateTime(0)
-  userId                       Int
-  user_profile_userIdTouser    user      @relation("profile_userIdTouser", fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_profile_ibfk_1")
-  user_user_profileIdToprofile user[]    @relation("user_profileIdToprofile")
+  profileId                 Int       @id @default(autoincrement())
+  profileSexe               String?   @db.VarChar(255)
+  profileCountry            String?   @db.VarChar(255)
+  profileCity               String?   @db.VarChar(255)
+  profileCreationDate       DateTime  @default(now()) @db.DateTime(0)
+  profileModificationDate   DateTime? @db.DateTime(0)
+  userId                    Int
+  user_profile_userIdTouser user      @relation("profile_userIdTouser", fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_profile_ibfk_1")
 
   @@index([userId], map: "userId")
   @@map("_profile")
 }
 
 model user {
-  userId                          Int       @id @default(autoincrement())
-  userFirstName                   String    @db.VarChar(255)
-  userLastName                    String    @db.VarChar(255)
-  userEmail                       String    @unique(map: "userEmail") @db.VarChar(255)
-  userPassword                    String    @db.VarChar(255)
-  isAdmin                         Boolean
-  userCreationDate                DateTime  @default(now()) @db.DateTime(0)
-  userModificationDate            DateTime? @db.DateTime(0)
-  profileId                       Int
-  comment                         comment[]
-  like                            like[]
-  post                            post[]
-  profile_profile_userIdTouser    profile[] @relation("profile_userIdTouser")
-  profile_user_profileIdToprofile profile   @relation("user_profileIdToprofile", fields: [profileId], references: [profileId], onDelete: NoAction, onUpdate: NoAction, map: "_user_ibfk_1")
+  userId                       Int       @id @default(autoincrement())
+  userFirstName                String    @db.VarChar(255)
+  userLastName                 String    @db.VarChar(255)
+  userEmail                    String    @unique(map: "userEmail") @db.VarChar(255)
+  userPassword                 String    @db.VarChar(255)
+  isAdmin                      Boolean   @default(false)
+  userCreationDate             DateTime  @default(now()) @db.DateTime(0)
+  userModificationDate         DateTime? @db.DateTime(0)
+  comment                      comment[]
+  like                         like[]
+  post                         post[]
+  profile_profile_userIdTouser profile[] @relation("profile_userIdTouser")
 
-  @@index([profileId], map: "profileId")
   @@map("_user")
 }
