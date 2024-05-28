@@ -2,6 +2,8 @@ const {PrismaClient} = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
+const {StatusCodes}= require("http-status-codes")
+require("dotenv").config();
 const prisma = new PrismaClient;
 
 const registerSchema = Joi.object({
@@ -43,33 +45,41 @@ const registerSchema = Joi.object({
         })
     });
 
-// define a Joi schema for login validation
-const loginSchema = Joi.object({
-    // define validation for userEmail
-    userEmail: Joi.string() // userEmail should be a string
-    .email() // userEmail should be a valid email
-    .required() // userEmail is required
-    .messages({ // custom error messages
-      "string.empty": "Email cannot be empty", // error message when userEmail is empty
-      "string.email": "Please enter a valid email", // error message when userEmail is not a valid email
-      "any.required": "Email is required" // error message when userEmail is not provided
-    }),
+const register= async (request, response) => {
+    try {
+        registerSchema.validate({userFirstName: request.body.userFirstName, userLastName: request.body.userLastName, userEmail: request.body.userEmail, userPassword: request.body.userPassword})
+        const hashedPassword= bcrypt.hashSync(request.body.userPassword,14);
+        const existingUser= await prisma.user.findUnique({
+            where: {userEmail: request.body.userEmail}
+        })
+        console.log(existingUser)
+        if (existingUser) {
+            return response.status(StatusCodes.BAD_REQUEST).json({error: "a user with this email already exists"});
+        }
+        const newuser= await prisma.user.create({
+            data: {
+                userFirstName: request.body.userFirstName,
+                userLastName: request.body.userLastName,
+                userEmail: request.body.userEmail,
+                userPassword: hashedPassword,
+    }});
 
-    // define validation for userPassword
-    userPassword: Joi.string() // userPassword should be a string
-    .min(8) // userPassword should have a minimum length of 8
-    .required() // userPassword is required
-    .messages({ // custom error messages
-      "string.empty": "Password cannot be empty", // error message when userPassword is empty
-      "string.min": "Password should have a minimum length of 8", // error message when userPassword is less than 8 characters
-      "any.required": "Password is required" // error message when userPassword is not provided
-    }) 
-});
+        const user= {
+            email: request.body.userEmail,
+            name: request.body.userLastName
+        }
+        const token= jwt.sign(user, process.env.JWT_SECRET )
 
-const register = async (request, response) => {
-    registerSchema.validate({userFirstName: request.body.userFirstName, userLastName: request.body.userLastName, userEmail: request.body.userEmail, userPassword: request.body.userPassword})
-
-    const newuser = prisma.user.create
+        response.status(StatusCodes.CREATED).json({
+            massage: "new acount was created successfully",
+            token:token
+        })
+    } catch (error) {
+        console.log(error);
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Internal server error");
+    }finally{
+        await prisma.$disconnect()
+    }
 }
 
 
