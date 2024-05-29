@@ -2,11 +2,14 @@ const express = require("express");
 require("dotenv").config();
 
 const authentificationRoutes = require("./routes/authentificationRouter.js");
+const postRouter = require("./routes/postRouter.js")
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(authentificationRoutes);
+app.use(postRouter);
 
 const port = process.env.APP_PORT || 8080;
 

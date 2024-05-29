@@ -19,7 +19,9 @@
     "http-status-codes": "^2.3.0",
     "joi": "^17.13.1",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "prisma": "^5.14.0",
     "xss-clean": "^0.1.4"
   },
-  "description": ""
+  "description": "Bienvenue sur le dépôt GitHub de l’API Africagram. Africagram est une application de partage de photos conçue par et pour les Africains. Elle offre une plateforme où les utilisateurs peuvent partager leurs moments précieux, suivre d’autres utilisateurs, aimer et commenter les publications."
 }

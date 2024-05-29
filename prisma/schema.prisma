@@ -45,6 +45,7 @@ model like {
 
 model post {
   postId               Int       @id @default(autoincrement())
+  postImage            String    @db.VarChar(255)
   postCaption          String    @db.VarChar(2200)
   postCreationDate     DateTime  @default(now()) @db.DateTime(0)
   postModificationDate DateTime? @db.DateTime(0)
