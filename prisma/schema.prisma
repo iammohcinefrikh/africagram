@@ -22,11 +22,15 @@ model comment {
 }
 
 model follow {
-  followId           Int      @id @default(autoincrement())
-  followingId        Int
-  followerId         Int
-  followCreationDate DateTime @default(now()) @db.DateTime(0)
+  followId                      Int      @id @default(autoincrement())
+  followingId                   Int
+  followerId                    Int
+  followCreationDate            DateTime @default(now()) @db.DateTime(0)
+  user_follow_followingIdTouser user     @relation("follow_followingIdTouser", fields: [followingId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_follow_ibfk_1")
+  user_follow_followerIdTouser  user     @relation("follow_followerIdTouser", fields: [followerId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "_follow_ibfk_2")
 
+  @@index([followerId], map: "followerId")
+  @@index([followingId], map: "followingId")
   @@map("_follow")
 }
 
@@ -74,18 +78,20 @@ model profile {
 }
 
 model user {
-  userId                       Int       @id @default(autoincrement())
-  userFirstName                String    @db.VarChar(255)
-  userLastName                 String    @db.VarChar(255)
-  userEmail                    String    @unique(map: "userEmail") @db.VarChar(255)
-  userPassword                 String    @db.VarChar(255)
-  isAdmin                      Boolean   @default(false)
-  userCreationDate             DateTime  @default(now()) @db.DateTime(0)
-  userModificationDate         DateTime? @db.DateTime(0)
-  comment                      comment[]
-  like                         like[]
-  post                         post[]
-  profile_profile_userIdTouser profile[] @relation("profile_userIdTouser")
+  userId                          Int       @id @default(autoincrement())
+  userFirstName                   String    @db.VarChar(255)
+  userLastName                    String    @db.VarChar(255)
+  userEmail                       String    @unique(map: "userEmail") @db.VarChar(255)
+  userPassword                    String    @db.VarChar(255)
+  isAdmin                         Boolean   @default(false)
+  userCreationDate                DateTime  @default(now()) @db.DateTime(0)
+  userModificationDate            DateTime? @db.DateTime(0)
+  comment                         comment[]
+  follow_follow_followingIdTouser follow[]  @relation("follow_followingIdTouser")
+  follow_follow_followerIdTouser  follow[]  @relation("follow_followerIdTouser")
+  like                            like[]
+  post                            post[]
+  profile_profile_userIdTouser    profile[] @relation("profile_userIdTouser")
 
   @@map("_user")
 }
