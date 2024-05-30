@@ -1,62 +1,154 @@
-const { request } = require("express");
-const upload = require("../helper/multerCofegeration.js");
-const  path = require("path")
-const Joi = require("joi")
-const {StatusCodes} = require("http-status-codes");
-const {PrismaClient}= require("@prisma/client");
+// import PrismaClient from the Prisma client library
+const {PrismaClient} = require("@prisma/client");
 
+// create a new instance of PrismaClient
 const prisma = new PrismaClient;
 
-const postSchema= Joi.object({
-    postCaption: Joi.string()
-    .min(3)
-    .max(2200)
-    .required()
-    .messages({
-        "string.min": "Caption must be at least 3 characters",
-        "string.max": "Caption must be at most 2200 characters",
-        "any.required": "Caption is required",
-        "string.empty": "the Caption must not be empty"
-    }),
-    postImage: Joi.string()
-    .required()
-    .messages({
-        "any.required": "Image is required",
-        "string.empty": "the image must not be empty"
-    })
+// define an asynchronous function to get posts
+const getPosts = async (request, response) => {
+  try {
+    // get the email of the user from the request object
+    const userEmail = request.user.email;
 
-});
+    // find the user in the database using their email
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        userEmail: userEmail
+      }
+    });
 
-const creatPost= async(request, response)=>{
-        try {
-            console.log(request.file)
-            // making the image path clean of \\
-            const imagePath = request.file.path.replace(/\\/g, '/') ;
-            // valideing the inputs by joi
-            postSchema.validate({postCaption: request.body.postCaption,postImage: request.file.path})
-            // the creating if the post
-            const newPost = await prisma.post.create({
-                data:{
-                    postCaption: request.body.postCaption,
-                    postImage:  imagePath,
-                    userId: parseInt(request.body.userId)
-                }
-            });
-            // the resposns that we need 
-            response.status(StatusCodes.CREATED).json({
-                message: "Post created successfully",
-                postinformation: newPost
-            });
-        } 
-        // catching the error
-        catch (error) {
-            console.error(error)
-            response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
-        }
-        finally{
-            await prisma.$disconnect();
-        }
-    };
+    // find all posts by the user in the database
+    const existingUserPosts = await prisma.post.findMany({
+      where: {
+        userId: existingUser.userId
+      }
+    });
 
+    // send a response with the status code and the posts
+    response.status(200).json({
+      statusCode: 200,
+      success: "OK",
+      message: "Posts fetched successfully.",
+      posts: existingUserPosts
+    });
+    console.log(request.user)
+  }
 
-module.exports = creatPost
+  catch (error) {
+    // send a response with the status code and the error message
+    response.status(500).json({
+      "statusCode": 500,
+      "error": "Internal server error",
+      "message": "An unknown error has occurred."
+    });
+  }
+}
+
+// define an asynchronous function to add a post
+const addPost = async (request, response) => {
+  try {
+    // get the post image and caption from the request body
+    const { postCaption } = request.body;
+    // get the email of the user from the request object
+    const userEmail = request.user.email;
+
+    const postImage = request.file.path.replace("/\\/g, '/'");
+
+    console.log(postImage);
+
+    // find the user in the database using their email
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        userEmail: userEmail
+      }
+    });
+
+    // create a new post in the database
+    await prisma.post.create({
+      data: {
+        postImage: postImage,
+        postCaption: postCaption,
+        userId: existingUser.userId
+      }
+    });
+
+    // send a response with the status code and a success message
+    response.status(201).json({
+      statusCode: 201,
+      success: "OK",
+      message: "Post added successfully."
+    });
+  }
+
+  catch (error) {
+    // send a response with the status code and the error message
+    response.status(500).json({
+      "statusCode": 500,
+      "error": "Internal server error",
+      "message": "An unknown error has occurred."
+    });
+  }
+}
+
+// This is an asynchronous function to like a post
+const likePost = async (request, response) => {
+  try {
+    // Extracting postId from request parameters
+    const { postId } = request.params;
+    
+    // Extracting user email from the request user object
+    const userEmail = request.user.email;
+
+    // Finding the user in the database using the userEmail
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        userEmail: userEmail
+      }
+    });
+
+    // Finding the post in the database using the postId
+    const existingPost = await prisma.post.findUnique({
+      where: {
+        postId: parseInt(postId)
+      }
+    });
+
+    // Updating the post in the database to increment the postLikes by 1
+    await prisma.post.update({
+      where: {
+        postId: parseInt(postId)
+      },
+      data: {
+        postLikes: parseInt(existingPost.postLikes) + 1
+      }
+    });
+
+    // Creating a new like in the database with the userId and postId
+    await prisma.like.create({
+      data: {
+        userId: existingUser.userId,
+        postId: existingPost.postId
+      }
+    });
+
+    // Sending a success response with status code 201 and a success message
+    response.status(201).json({
+      statusCode: 201,
+      success: "OK",
+      message: "Post liked successfully."
+    });
+  }
+
+  // Catch block to handle any errors that occur during the execution of the try block
+  catch (error) {
+    // Sending an error response with status code 500 and an error message
+    response.status(500).json({
+      "statusCode": 500,
+      "error": "Internal server error",
+      "message": "An unknown error has occurred."
+    });
+  }
+}
+
+// export the getPosts and addPost functions
+module.exports = { getPosts, addPost, likePost }

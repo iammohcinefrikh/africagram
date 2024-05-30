@@ -49,6 +49,7 @@ model post {
   postCaption          String    @db.VarChar(2200)
   postCreationDate     DateTime  @default(now()) @db.DateTime(0)
   postModificationDate DateTime? @db.DateTime(0)
+  postLikes            Int       @default(0)
   userId               Int
   comment              comment[]
   like                 like[]

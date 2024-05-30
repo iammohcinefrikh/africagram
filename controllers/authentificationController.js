@@ -95,7 +95,8 @@ const register= async (request, response) => {
 
         response.status(StatusCodes.CREATED).json({
             massage: "new acount was created successfully",
-            token:token
+            token:token,
+            user:user
         })
     } catch (error) {
         console.log(error);
@@ -136,7 +137,7 @@ const login = async (request, response) => {
             return response.status(401).json({
                 "statusCode": 401,
                 "error": "Unauthorized",
-                "message": "Access is denied due to invalid credentials."
+                "message": "Access is denied."
             });
         }
 
@@ -149,14 +150,19 @@ const login = async (request, response) => {
                 return response.status(401).json({
                     "statusCode": 401,
                     "error": "Unauthorized",
-                    "message": "Access is denied due to invalid credentials."
+                    "message": "Access is denied."
                 });
             }
 
             else {
                 // if the passwords match, sign a JWT with the user's email and return it in the response
-                const jwtToken = jwt.sign({ email: userEmail }, process.env.JWT_SECRET);
-                response.status(200).json({ jwtToken });
+                const jwtToken = jwt.sign({ email: userEmail }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                response.status(200).json({ 
+                    "statusCode": 200,
+                    "success": "OK",
+                    "message": "Logged in successfully.",
+                    "token": jwtToken 
+                });
             }
         }
     }
