@@ -95,7 +95,8 @@ const register= async (request, response) => {
 
         response.status(StatusCodes.CREATED).json({
             massage: "new acount was created successfully",
-            token:token
+            token:token,
+            user:user
         })
     } catch (error) {
         console.log(error);

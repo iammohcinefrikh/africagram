@@ -31,6 +31,7 @@ const getPosts = async (request, response) => {
       message: "Posts fetched successfully.",
       posts: existingUserPosts
     });
+    console.log(request.user)
   }
 
   catch (error) {
