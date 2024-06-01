@@ -6,6 +6,7 @@ const postRoutes = require("./routes/postRouter.js");
 const followerRoutes = require("./routes/followerRouter.js");
 const coumentRouter= require("./routes/commentRouter.js");
 const userRouter= require("./routes/userRouter.js");
+const statisticsRouter = require("./routes/statisticsRouter.js");
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use(postRoutes);
 app.use(followerRoutes);
 app.use(coumentRouter);
 app.use(userRouter);
+app.use(statisticsRouter);
 
 const port = process.env.APP_PORT || 8080;
 

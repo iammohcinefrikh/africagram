@@ -4,6 +4,9 @@ const {PrismaClient} = require("@prisma/client");
 // create a new instance of PrismaClient
 const prisma = new PrismaClient;
 
+// importing the handleResponse function from the handleResponseHelper file
+const { handleResponse } = require("../helpers/handleResponseHelper.js");
+
 // define an asynchronous function to get posts
 const getPosts = async (request, response) => {
   try {
@@ -31,16 +34,11 @@ const getPosts = async (request, response) => {
       message: "Posts fetched successfully.",
       posts: existingUserPosts
     });
-    console.log(request.user)
   }
 
   catch (error) {
     // send a response with the status code and the error message
-    response.status(500).json({
-      "statusCode": 500,
-      "error": "Internal server error",
-      "message": "An unknown error has occurred."
-    });
+    handleResponse(response, 500, "error", "Internal server error", "An unknown error has occurred.");
   }
 }
 
@@ -52,9 +50,8 @@ const addPost = async (request, response) => {
     // get the email of the user from the request object
     const userEmail = request.user.email;
 
+    // get the image path from the request object
     const postImage = request.file.path.replace("/\\/g, '/'");
-
-    console.log(postImage);
 
     // find the user in the database using their email
     const existingUser = await prisma.user.findUnique({
@@ -73,20 +70,12 @@ const addPost = async (request, response) => {
     });
 
     // send a response with the status code and a success message
-    response.status(201).json({
-      statusCode: 201,
-      success: "OK",
-      message: "Post added successfully."
-    });
+    handleResponse(response, 201, "success", "Created", "Post created successfully.");
   }
 
   catch (error) {
     // send a response with the status code and the error message
-    response.status(500).json({
-      "statusCode": 500,
-      "error": "Internal server error",
-      "message": "An unknown error has occurred."
-    });
+    handleResponse(response, 500, "error", "Internal server error", "An unknown error has occurred.");
   }
 }
 
@@ -132,21 +121,13 @@ const likePost = async (request, response) => {
     });
 
     // Sending a success response with status code 201 and a success message
-    response.status(201).json({
-      statusCode: 201,
-      success: "OK",
-      message: "Post liked successfully."
-    });
+    handleResponse(response, 200, "success", "OK", "Post liked successfully.");
   }
 
   // Catch block to handle any errors that occur during the execution of the try block
   catch (error) {
     // Sending an error response with status code 500 and an error message
-    response.status(500).json({
-      "statusCode": 500,
-      "error": "Internal server error",
-      "message": "An unknown error has occurred."
-    });
+    handleResponse(response, 500, "error", "Internal server error", "An unknown error has occurred.");
   }
 }
 
